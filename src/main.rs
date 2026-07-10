@@ -9,32 +9,6 @@ use crossterm::{
 };
 use std::io::{Stdout, Write, stdout};
 
-fn show_lines(last_row: u16, lines: &Vec<String>) -> std::io::Result<()> {
-	// Header
-	execute!(
-		stdout(),
-		MoveTo(0, 0),
-		Print("Loofa vAlpha0.1"),
-		MoveTo(0, 1),
-		Print("Press Ctrl+C to stop the program."),
-	)?;
-	stdout().flush()?;
-
-	let mut row = last_row-1;
-	let mut i = 1;
-	let size = lines.len();
-	while row > 1 && i <= size {
-		queue!(stdout(), MoveTo(0, row))?;
-		let l = lines.get(size - i).unwrap();
-		write!(stdout(), "{l}")?;
-
-		i += 1;
-		row -= 1;
-	}
-	stdout().flush()?;
-	Ok(())
-}
-
 fn update_display(stdout: &mut Stdout, lines: &[String], rows: u16) -> std::io::Result<()> {
 	for r in 2..rows-1 {
 		queue!(stdout, MoveTo(0, r), Clear(ClearType::CurrentLine))?;
@@ -65,7 +39,6 @@ fn main() -> std::io::Result<()> {
 
     let (_, rows) = size()?;
 	update_display(&mut stdout, &lines, rows)?;
-	show_lines(rows-1, &lines)?;
 
 	let mut curr_line = String::new();
 
