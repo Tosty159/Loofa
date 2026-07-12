@@ -1,12 +1,12 @@
-use std::io::{Write, stdin, stdout};
+use tokio::net::TcpStream;
+use tokio_tungstenite::{MaybeTlsStream, WebSocketStream, connect_async};
 
-use tokio_tungstenite::{connect_async, tungstenite::Message};
-use futures_util::{SinkExt, StreamExt};
+pub type WsStream = WebSocketStream<MaybeTlsStream<TcpStream>>;
 
 pub async fn ws_handshake(
     server_url: &str,
     token: &str
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<WsStream, Box<dyn std::error::Error>> {
     let ws_url = if server_url.starts_with("http://") {
         server_url.replace("http://", "ws://")
     } else if server_url.starts_with("https://") {
@@ -24,44 +24,6 @@ pub async fn ws_handshake(
     if response.status() != 101 {
         return Err(format!("Websocket connection failed : {}", response.status()).into());
     }
-
-    let (mut sender, mut reciever) = ws_stream.split();
-
-    let recieve_handle = tokio::spawn(async move {
-        while let Some(Ok(msg)) = reciever.next().await {
-            match msg {
-                Message::Text(text) => {
-                    println!("\r[Server] {text}");
-                    print!("> ");
-                    let _ = stdout().flush();
-                },
-                Message::Close(_) => {
-                    println!("\r[Server]: Connection closed.");
-                    break;
-                },
-                _ => {},
-            }
-        }
-        println!("\n[Disconnected] WebSocket connection closed.");
-    });
-
-    let mut input = String::new();
-    loop {
-        print!("> ");
-        let _ = stdout().flush();
-
-        input.clear();
-        if stdin().read_line(&mut input).is_err() {
-            break;
-        }
-
-        if let Err(e) = sender.send(Message::Text(input.clone().into())).await {
-            eprintln!("Failed to send message: {e}");
-            break;
-        }
-    }
-
-    let _ = recieve_handle.await;
-    std::thread::sleep(std::time::Duration::from_millis(1000));
-    Ok(())
+    
+    Ok(ws_stream)
 }

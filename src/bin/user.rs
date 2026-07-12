@@ -1,4 +1,4 @@
-use Loofa::user::{prompt_login, handle_login, ws_handshake};
+use Loofa::user::{ChatUI, handle_login, prompt_login, ws_handshake};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -20,10 +20,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 		}
 	};
 
-	if let Err(e) = ws_handshake(server_url, &token).await {
-		eprintln!("WebSocket error: {e}");
-		return Err(e);
-	}
+	let ws_stream = match ws_handshake(server_url, &token).await {
+		Ok(w) => w,
+		Err(e) => {
+			eprintln!("WebSocket error: {e}");
+			return Err(e);
+		}
+	};
+
+	let mut ui = ChatUI::new(ws_stream);
+    ui.init_display()?;
+    ui.display().await?;
 
 	println!("Goodbye!");
 	Ok(())

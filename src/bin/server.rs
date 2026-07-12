@@ -55,9 +55,6 @@ async fn handle_authenticated_socket(
     let (mut sender, mut reciever) = socket.split();
     let (tx, _) = tokio::sync::mpsc::unbounded_channel::<Message>();
 
-    let welcome = format!("Welcome, {username}!");
-    let _ = sender.send(Message::Text(welcome)).await;
-
     {
         let mut connections = state.connections.lock().await;
         connections.insert(username.clone(), tx);
