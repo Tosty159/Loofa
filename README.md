@@ -20,5 +20,5 @@ cargo build --release
 Run the program
 
 ```bash
-./target/release/Loofa
+./target/release/user
 ```
