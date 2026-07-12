@@ -16,10 +16,8 @@ pub async fn ws_handshake(
     };
 
     let url = format!("{ws_url}/ws?token={token}");
-    println!("Connecting to: {url}");
 
     let (ws_stream, response) = connect_async(&url).await?;
-    println!("Websocket handshake status: {}", response.status());
 
     if response.status() != 101 {
         return Err(format!("Websocket connection failed : {}", response.status()).into());
