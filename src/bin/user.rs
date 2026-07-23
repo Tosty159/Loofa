@@ -1,4 +1,4 @@
-use Loofa::user::{ChatUI, handle_login, prompt_login, ws_handshake};
+use loofa::user::{ChatUI, handle_login, prompt_login, ws_handshake};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

@@ -3,8 +3,8 @@ use axum::{
 };
 use tokio::{net::TcpListener, sync::{Mutex, broadcast}};
 use std::{collections::HashMap, sync::Arc};
-use Loofa::utils::structs::AppState;
-use Loofa::server::{handle_login, ws_handler};
+use loofa::utils::structs::AppState;
+use loofa::server::{handle_login, ws_handler};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

@@ -59,6 +59,7 @@ impl UIState {
         let mut stdout = stdout();
 
         let rows = self.rows.load(Ordering::SeqCst);
+        let cols = self.cols.load(Ordering::SeqCst);
         let scroll = self.scroll.load(Ordering::SeqCst);
 
         // Clear lines
@@ -78,10 +79,17 @@ impl UIState {
             lines[start_idx..end_idx].iter().rev().enumerate()
         {
             let row = rows - 2 - idx as u16;
+
+            let trimmed = if line.len() > cols as usize {
+                format!("{}...", &line[..(cols-3) as usize])
+            } else {
+                line.clone()
+            };
+
             queue!(
                 stdout,
                 MoveTo(0,row),
-                Print(line),
+                Print(trimmed),
             )?;
         }
         queue!(stdout, MoveTo(0,rows-1))?;
@@ -158,6 +166,7 @@ impl ChatUI {
         stdout.execute(EnableMouseCapture)?;
 
         let rows = state_clone.rows.load(Ordering::SeqCst);
+        let cols = state_clone.cols.load(Ordering::SeqCst);
         execute!(
             stdout,
             MoveTo(0,0),
@@ -178,9 +187,11 @@ impl ChatUI {
                                     break;
                                 },
                                 KeyCode::Char(ch) => {
-                                    write!(stdout, "{ch}")?;
-                                    stdout.flush()?;
-                                    curr_line.push(ch);
+                                    if curr_line.len() + 1 < cols as usize {
+                                        write!(stdout, "{ch}")?;
+                                        stdout.flush()?;
+                                        curr_line.push(ch);
+                                    }
                                 },
                                 KeyCode::Backspace => {
                                     write!(stdout, "\x08 \x08")?;
